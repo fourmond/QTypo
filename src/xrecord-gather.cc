@@ -21,6 +21,7 @@
 
 #include <unistd.h>
 
+#include <sys/select.h>
 #include <stdio.h>
 
 /// This local struct is used for passing around data along the pipe.
@@ -31,8 +32,9 @@ typedef struct {
 static void intercept(int fd, XRecordInterceptData * data)
 {
   EventData d;
-  if(data->category == XRecordFromServer || 
-     data->category == XRecordStartOfData) {
+  if(data->category == XRecordFromServer 
+     /* || 
+	data->category == XRecordStartOfData*/ ) {
     d.time = data->server_time;
     write(fd, &d, sizeof(d));
   }
@@ -43,7 +45,8 @@ int XRecordGather::startGathering(const char * display)
 {
   int fd[2];
   pipe(fd);
-  if(fork()) {
+  printf("fds: %d %d\n", fd[0], fd[1]);
+  if(childPID = fork()) {
     close(fd[1]);
     gatheringFd = fd[0];
     return 1;
@@ -84,10 +87,54 @@ int XRecordGather::startGathering(const char * display)
   if( ! XRecordEnableContext(dpy, context, 
 			     (void (*)(char*, XRecordInterceptData*)) 
 			     intercept, 
-			     (XPointer) this)) {
+			     (XPointer) fd[1])) {
     fprintf(stderr, "Error: failed to allocate the record range\n");
     exit(1);
   }
   
   exit(0);
+}
+
+bool XRecordGather::pendingData()
+{
+  fd_set rfds;
+  struct timeval tv;
+  int retval;
+  
+  FD_ZERO(&rfds);
+  FD_SET(gatheringFd, &rfds);
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+  retval = select(gatheringFd + 1, &rfds, NULL, NULL, &tv);
+  if(retval < 0) {
+    perror("select");
+  }
+  else if(retval > 0)
+    return true;
+  return false;
+}
+
+void XRecordGather::pullFromGatheringThread()
+{
+  EventData d;
+  /// This clearly would need buffering, but I'm unsure if it would
+  /// work fine. Anyway, the load should not be huge.
+  while(pendingData()) {
+    read(gatheringFd, &d, sizeof(d));
+    keyPressEvents.addEvent(d.time);
+  }
+}
+
+XRecordGather::XRecordGather(int refreshRate)
+{
+  refreshTimer.setSingleShot(false);
+  refreshTimer.start(refreshRate);
+  connect(&refreshTimer, SIGNAL(timeout()), SLOT(doPullData()));
+  
+}
+
+void XRecordGather::doPullData()
+{
+  pullFromGatheringThread();
+  // printf("Number of events: %d\n", keyPressEvents.nbEvents());
 }

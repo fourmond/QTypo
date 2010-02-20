@@ -1,5 +1,5 @@
 /** 
-    \file headers.hh precompiled headers for QTypo
+    \file event-statistics.hh 
     Copyright 2010 by Vincent Fourmond
 
     This program is free software; you can redistribute it and/or modify
@@ -15,30 +15,29 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __HEADERS_HH
-#define __HEADERS_HH
 
-#include <QApplication>
-#include <QMainWindow>
-#include <QHash>
-#include <QAction>
-#include <QString>
-#include <QStringList>
-#include <QPushButton>
-#include <QDialog>
-#include <QProcess>
-#include <QQueue>
-#include <QTimer>
-// #include <QMutex>
-// #include <QMutexLocker>
+#ifndef __EVENT_STATISTICS_HH
+#define __EVENT_STATISTICS_HH
 
-#include <QX11Info>
+/// This class provides statistics for events spaced in time.
+class EventStatistics {
+  QQueue<long> events;
 
-// X11 stuff
-#include <X11/Xlibint.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/record.h>
+  /// The maximum time between the first and last events
+  long frame;
+public:
 
+  /// Creates an EventStatistics object.
+  EventStatistics(long f = 100000) : frame(f) {;};
+
+  /// Add one event.
+  ///
+  /// \arg time is the time of the event (with respect to an arbitraty
+  /// reference) in milliseconds
+  void addEvent(long time);
+
+  /// The number of events currently in the processing queue.
+  int nbEvents() { return events.size();};
+};
 
 #endif

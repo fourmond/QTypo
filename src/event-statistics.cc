@@ -1,5 +1,5 @@
-/** 
-    \file headers.hh precompiled headers for QTypo
+/* 
+    xrecord-gather.cc 
     Copyright 2010 by Vincent Fourmond
 
     This program is free software; you can redistribute it and/or modify
@@ -15,30 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __HEADERS_HH
-#define __HEADERS_HH
 
-#include <QApplication>
-#include <QMainWindow>
-#include <QHash>
-#include <QAction>
-#include <QString>
-#include <QStringList>
-#include <QPushButton>
-#include <QDialog>
-#include <QProcess>
-#include <QQueue>
-#include <QTimer>
-// #include <QMutex>
-// #include <QMutexLocker>
+#include <headers.hh>
+#include <event-statistics.hh>
 
-#include <QX11Info>
-
-// X11 stuff
-#include <X11/Xlibint.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/record.h>
-
-
-#endif
+void EventStatistics::addEvent(long time)
+{
+  events.enqueue(time);
+  while(events.head() + frame < time)
+    events.dequeue();
+}

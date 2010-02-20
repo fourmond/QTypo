@@ -19,12 +19,37 @@
 #ifndef __XRECORD_GATHER_HH
 #define __XRECORD_GATHER_HH
 
+#include <event-statistics.hh>
+
 class XRecordGather : public QObject {
   Q_OBJECT;
   /// The file descriptor of the pipe from the gathering thread.
   int gatheringFd;
+
+  /// The queue handling the actual compilation of the statistics.
+  EventStatistics keyPressEvents;
+
+  /// Pulls data from the subthread and adds it to keyPressEvents.
+  void pullFromGatheringThread();
+
+  /// Returns true if the pipe has pending data
+  bool pendingData();
+
+  /// The timer handling the gathering of the data.
+  QTimer refreshTimer;
+
+  /// The subprocess PID
+  int childPID;
+protected slots:
+  /// internally called by the timer to pull the data
+  void doPullData();
+
 public:
-  XRecordGather() {;};
+  /// Initializes a XRecordGather instance.
+  ///
+  /// \arg refreshRate the rate at which data is pulled from the
+  /// underlying gathering process, in milliseconds.
+  XRecordGather(int refreshRate = 200);
   ~XRecordGather() {;};
 
   /// Starts gathering on the given display (NULL means default) 
