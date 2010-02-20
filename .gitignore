@@ -1,0 +1,10 @@
+# -*- mode: conf; -*-
+
+# Backup files:
+*~
+
+# Generated files:
+*.o
+*.gch
+QTypo
+Makefile
