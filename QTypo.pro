@@ -9,7 +9,11 @@ VERSION = 0.0
 
 PRECOMPILED_HEADER = src/headers.hh
 
-# Input
-SOURCES += src/qmain.cc
+LIBS += -lXtst
 
-HEADERS += src/headers.hh
+
+# Input
+SOURCES += src/qmain.cc \
+	src/xrecord-gather.cc
+
+HEADERS += src/headers.hh src/xrecord-gather.hh

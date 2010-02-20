@@ -1,5 +1,5 @@
 /** 
-    qmain.cc: entry point of QTypo
+    \file xrecord-gather.hh 
     Copyright 2010 by Vincent Fourmond
 
     This program is free software; you can redistribute it and/or modify
@@ -16,21 +16,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <headers.hh>
-#include <xrecord-gather.hh>
+#ifndef __XRECORD_GATHER_HH
+#define __XRECORD_GATHER_HH
 
-#include <stdio.h>
+class XRecordGather : public QObject {
+  Q_OBJECT;
+  /// The file descriptor of the pipe from the gathering thread.
+  int gatheringFd;
+public:
+  XRecordGather() {;};
+  ~XRecordGather() {;};
 
-int main(int argc, char ** argv)
-{
-  QApplication main(argc, argv);
-  main.setApplicationName("QTypo");
-  QMainWindow win;
+  /// Starts gathering on the given display (NULL means default) 
+  int startGathering(const char * display = NULL);
 
-  XRecordGather biniou;
-  biniou.startGathering();
+};
 
-  win.show();
-  win.statusBar();
-  main.exec();
-}
+#endif

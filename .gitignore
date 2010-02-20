@@ -8,3 +8,5 @@
 *.gch
 QTypo
 Makefile
+moc_*.cpp
+doc/

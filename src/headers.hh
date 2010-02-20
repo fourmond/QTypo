@@ -32,4 +32,13 @@
 #include <QMutex>
 #include <QMutexLocker>
 
+#include <QX11Info>
+
+// X11 stuff
+#include <X11/Xlibint.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/record.h>
+
+
 #endif
