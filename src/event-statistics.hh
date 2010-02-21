@@ -38,6 +38,17 @@ public:
 
   /// The number of events currently in the processing queue.
   int nbEvents() { return events.size();};
+
+  /// Returns the number of events per second over the whole frame.
+  double averageRate();
+
+  /// Divides the frame into nb segments and count the key strokes
+  /// inside them. 
+  QVector<long> histogram(int nb);
+
+  /// Draws a histogram into a QPixmap and returns it.
+  QPixmap history();
+  
 };
 
 #endif

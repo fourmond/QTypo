@@ -21,13 +21,15 @@
 
 #include <event-statistics.hh>
 
+/// The class gathering the information from the X server.
+///
+/// \todo the handling of time is shaky in that it does not update
+/// when there are no events.
 class XRecordGather : public QObject {
   Q_OBJECT;
   /// The file descriptor of the pipe from the gathering thread.
   int gatheringFd;
 
-  /// The queue handling the actual compilation of the statistics.
-  EventStatistics keyPressEvents;
 
   /// Pulls data from the subthread and adds it to keyPressEvents.
   void pullFromGatheringThread();
@@ -37,6 +39,9 @@ class XRecordGather : public QObject {
 
   /// The timer handling the gathering of the data.
   QTimer refreshTimer;
+
+  /// The queue handling the actual compilation of the statistics.
+  EventStatistics keyPressEvents;
 
   /// The subprocess PID
   int childPID;
@@ -49,12 +54,25 @@ public:
   ///
   /// \arg refreshRate the rate at which data is pulled from the
   /// underlying gathering process, in milliseconds.
-  XRecordGather(int refreshRate = 200);
+  XRecordGather(int refreshRate = 1000);
   ~XRecordGather() {;};
 
   /// Starts gathering on the given display (NULL means default) 
   int startGathering(const char * display = NULL);
 
+  /// \name Accessor functions for statistics
+  /// 
+  /// @{
+  double averageRate() { return keyPressEvents.averageRate();};
+
+  QPixmap history() { return keyPressEvents.history();};
+
+  /// @}
+
+signals:
+  /// This signal is emitted whenever the state of the queue has
+  /// changed, once for each call to pullFromGatheringThread().
+  void newEvents();
 };
 
 #endif

@@ -1,5 +1,5 @@
-/** 
-    qmain.cc: entry point of QTypo
+/*
+    mainwin.cc: Main window for QTypo
     Copyright 2010 by Vincent Fourmond
 
     This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,24 @@
 */
 
 #include <headers.hh>
-#include <xrecord-gather.hh>
 #include <mainwin.hh>
 
-#include <stdio.h>
-
-int main(int argc, char ** argv)
+MainWin::MainWin(XRecordGather *g) : gatherer(g)
 {
-  QApplication main(argc, argv);
-  main.setApplicationName("QTypo");
+  QWidget * central = new QWidget(this);
+  QVBoxLayout * layout = new QVBoxLayout(central);
+  imgDisplay = new QLabel();
+  layout->addWidget(imgDisplay);
+  textDisplay = new QLabel();
+  layout->addWidget(textDisplay);
+  setCentralWidget(central);
+  connect(gatherer, SIGNAL(newEvents()), SLOT(updateDisplay()));
+  updateDisplay();
+}
 
-  XRecordGather gatherer;
-  gatherer.startGathering();
-
-  MainWin win(&gatherer);
-
-  win.show();
-  main.exec();
+void MainWin::updateDisplay()
+{
+  textDisplay->setText(tr("Avg: %1 k/s Max: 0 k/s").
+		       arg(gatherer->averageRate()));
+  imgDisplay->setPixmap(gatherer->history());
 }

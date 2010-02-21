@@ -29,8 +29,11 @@
 #include <QProcess>
 #include <QQueue>
 #include <QTimer>
-// #include <QMutex>
-// #include <QMutexLocker>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QPixmap>
+#include <QPainter>
+#include <QPainterPath>
 
 #include <QX11Info>
 

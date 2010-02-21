@@ -1,5 +1,5 @@
 /** 
-    qmain.cc: entry point of QTypo
+    \file mainwin.hh Main window for QTypo
     Copyright 2010 by Vincent Fourmond
 
     This program is free software; you can redistribute it and/or modify
@@ -16,22 +16,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <headers.hh>
+#ifndef __MAINWIN_HH
+#define __MAINWIN_HH
+
 #include <xrecord-gather.hh>
-#include <mainwin.hh>
 
-#include <stdio.h>
+/// Main window of QTypo.
+class MainWin : public QMainWindow {
 
-int main(int argc, char ** argv)
-{
-  QApplication main(argc, argv);
-  main.setApplicationName("QTypo");
+  Q_OBJECT;
 
-  XRecordGather gatherer;
-  gatherer.startGathering();
+  XRecordGather * gatherer;
 
-  MainWin win(&gatherer);
+  QLabel * textDisplay;
+  QLabel * imgDisplay;
 
-  win.show();
-  main.exec();
-}
+public:
+  MainWin(XRecordGather *g);
+  ~MainWin() {;};
+
+public slots:
+  /// Updates the display to reflect recent changes in the statistics
+  void updateDisplay();
+  
+};
+
+#endif

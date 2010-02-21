@@ -45,8 +45,7 @@ int XRecordGather::startGathering(const char * display)
 {
   int fd[2];
   pipe(fd);
-  printf("fds: %d %d\n", fd[0], fd[1]);
-  if(childPID = fork()) {
+  if((childPID = fork())) {
     close(fd[1]);
     gatheringFd = fd[0];
     return 1;
@@ -119,10 +118,14 @@ void XRecordGather::pullFromGatheringThread()
   EventData d;
   /// This clearly would need buffering, but I'm unsure if it would
   /// work fine. Anyway, the load should not be huge.
+  int i = 0;
   while(pendingData()) {
     read(gatheringFd, &d, sizeof(d));
     keyPressEvents.addEvent(d.time);
+    i++;
   }
+  if(i)
+    emit newEvents();
 }
 
 XRecordGather::XRecordGather(int refreshRate)
@@ -136,5 +139,4 @@ XRecordGather::XRecordGather(int refreshRate)
 void XRecordGather::doPullData()
 {
   pullFromGatheringThread();
-  // printf("Number of events: %d\n", keyPressEvents.nbEvents());
 }
