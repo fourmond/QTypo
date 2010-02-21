@@ -28,7 +28,11 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g)
   textDisplay = new QLabel();
   layout->addWidget(textDisplay);
   setCentralWidget(central);
-  connect(gatherer, SIGNAL(newEvents()), SLOT(updateDisplay()));
+
+  refreshTimer.setSingleShot(false);
+  refreshTimer.start(1000);
+
+  connect(&refreshTimer, SIGNAL(timeout()), SLOT(updateDisplay()));
   updateDisplay();
 }
 

@@ -40,14 +40,14 @@ public:
   int nbEvents() { return events.size();};
 
   /// Returns the number of events per second over the whole frame.
-  double averageRate();
+  double averageRate(long currentTime);
 
   /// Divides the frame into nb segments and count the key strokes
   /// inside them. 
-  QVector<long> histogram(int nb);
+  QVector<long> histogram(int nb, long currentTime);
 
   /// Draws a histogram into a QPixmap and returns it.
-  QPixmap history();
+  QPixmap history(long currentTime);
   
 };
 

@@ -31,6 +31,7 @@ class MainWin : public QMainWindow {
   QLabel * textDisplay;
   QLabel * imgDisplay;
 
+  QTimer refreshTimer;
 public:
   MainWin(XRecordGather *g);
   ~MainWin() {;};

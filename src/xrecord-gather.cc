@@ -32,9 +32,8 @@ typedef struct {
 static void intercept(int fd, XRecordInterceptData * data)
 {
   EventData d;
-  if(data->category == XRecordFromServer 
-     /* || 
-	data->category == XRecordStartOfData*/ ) {
+  if(data->category == XRecordFromServer || 
+	data->category == XRecordStartOfData ) {
     d.time = data->server_time;
     write(fd, &d, sizeof(d));
   }
@@ -121,7 +120,12 @@ void XRecordGather::pullFromGatheringThread()
   int i = 0;
   while(pendingData()) {
     read(gatheringFd, &d, sizeof(d));
-    keyPressEvents.addEvent(d.time);
+    if(firstEvent.isValid())
+      keyPressEvents.addEvent(d.time - firstServerTime);
+    else {
+      firstEvent = QDateTime::currentDateTime();
+      firstServerTime = d.time;
+    }
     i++;
   }
   if(i)
@@ -139,4 +143,15 @@ XRecordGather::XRecordGather(int refreshRate)
 void XRecordGather::doPullData()
 {
   pullFromGatheringThread();
+}
+
+
+long  XRecordGather::currentTime()
+{
+  QDateTime cur = QDateTime::currentDateTime();
+  return 
+    firstEvent.secsTo(cur) * 1000 + 
+    ( cur.time().msec() > firstEvent.time().msec() ? 
+      cur.time().msec() - firstEvent.time().msec() : 
+      1000 + cur.time().msec() - firstEvent.time().msec());
 }

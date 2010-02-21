@@ -34,6 +34,9 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QPainterPath>
+#include <QDate>
+#include <QTime>
+#include <QDateTime>
 
 #include <QX11Info>
 

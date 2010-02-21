@@ -26,28 +26,33 @@ void EventStatistics::addEvent(long time)
     events.dequeue();
 }
 
-double EventStatistics::averageRate()
+double EventStatistics::averageRate(long currentTime)
 {
   if(events.size() < 2)
     return 0;
-  return events.size()/(1e-3 * (events.last() - events.head()));
+  return events.size()/(1e-3 * (currentTime- events.head()));
 }
 
-QVector<long> EventStatistics::histogram(int nb)
+
+QVector<long> EventStatistics::histogram(int nb, long currentTime)
 {
+  /// \todo this function most probably should provide more decent
+  /// control in terms of binning and the like.
   QVector<long> hist(nb, 0);
   if(events.size() < 1)
     return hist;
-  long init = events.last() - frame +1;
+  long init = currentTime - frame +1;
   for(int i = 0; i < events.size(); i++) {
-    hist[(events[i] - init)*nb/frame] += 1;
+    int j = (events[i] - init)*nb/frame;
+    if(j>=0 && j < nb) 
+      hist[j] += 1;
   }
   return hist;
 }
 
-QPixmap EventStatistics::history()
+QPixmap EventStatistics::history(long currentTime)
 {
-  QVector<long> hist = histogram(frame/1000);
+  QVector<long> hist = histogram(frame/1000,currentTime);
   QPixmap pix(frame/1000*2, 30); // 2 points for one keystroke per second
   QPainter d(&pix);
   QColor c("red");
