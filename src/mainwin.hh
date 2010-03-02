@@ -38,6 +38,21 @@ class MainWin : public QMainWindow {
   /// The history pixmap
   QPixmap rateDisplay;
 
+  /// The size in terms of the display
+  QSize displaySize;
+
+  /// The size of the text band down.
+  int textSize;
+
+  /// The total size of the inner widget.
+  QSize totalSize;
+
+  /// The left margin (X axis ?)
+  int leftMargin;
+
+  /// The right margin (X axis ?)
+  int rightMargin;
+
   /// The last XRecordGather::currentTime() when the display was
   /// updated, or -1
   long lastTime;

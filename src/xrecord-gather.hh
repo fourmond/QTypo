@@ -63,7 +63,7 @@ public:
   ///
   /// \arg refreshRate the rate at which data is pulled from the
   /// underlying gathering process, in milliseconds.
-  XRecordGather(int refreshRate = 1000);
+  XRecordGather(int refreshRate = 100);
   ~XRecordGather() {;};
 
   /// Starts gathering on the given display (NULL means default) 

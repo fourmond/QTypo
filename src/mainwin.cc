@@ -29,12 +29,22 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
   refreshTimer.setSingleShot(false);
   refreshTimer.start(1000);
 
+  displaySize = QSize(200,40);
+  textSize = 15;
+  leftMargin = 15;
+  rightMargin = 5;
+  totalSize = QSize(displaySize.width() + leftMargin + rightMargin, 
+		    displaySize.height() + textSize);
+  
   /// @todo customize !
-  rateDisplay = QPixmap(200, 30);
+  rateDisplay = QPixmap(displaySize);
   rateDisplay.fill(); /// \todo customize background color...
 
   connect(&refreshTimer, SIGNAL(timeout()), SLOT(updateDisplay()));
   updateDisplay();
+
+  resize(totalSize);
+  setWindowFlags(Qt::FramelessWindowHint);
 }
 
 void MainWin::updateDisplay()
@@ -42,17 +52,20 @@ void MainWin::updateDisplay()
   long currentTime = gatherer->currentTime();
   if(currentTime <= lastTime)
     return;
-  QPixmap area = QPixmap(200,45);
+  QPixmap area = QPixmap(totalSize);
   QPainter p(&area);
   p.eraseRect(area.rect());
 
   /// @todo make it all neat and clean, using the right functions...
-  p.drawText(0,42,tr("Avg: %1 k/s Max: 0 k/s").
+  p.drawText(QRect(0,displaySize.height(), totalSize.width(),
+		   totalSize.height() - displaySize.height()),
+	     Qt::AlignCenter, 
+	     tr("Avg: %1 k/s Max: 0 k/s").
 	     arg(gatherer->events()->averageRate(currentTime),0,'f', 1));
 
 
   if(lastTime >= 0) {
-    QPixmap nd(200,30);
+    QPixmap nd(displaySize);
     nd.fill();
     {
       QPainter np(&nd);
@@ -61,14 +74,15 @@ void MainWin::updateDisplay()
       np.drawPixmap(0,0,rateDisplay, 2,0, -1, -1);
       
       // Now, draw some bar:
-      np.fillRect(198, 29, 2, - avg * 2, Qt::SolidPattern);
-      printf("rate: %f\n", avg);
+      np.fillRect(displaySize.width() - 2, 
+		  displaySize.height() - 1, 2, - avg * 2, 
+		  Qt::SolidPattern);
     }
     rateDisplay = nd;
   }
 
   // Last draw the rateDisplay
-  p.drawPixmap(0,0, rateDisplay);
+  p.drawPixmap(leftMargin,0, rateDisplay);
 
   // maybe draw lines at 5 and 10 ?
   
