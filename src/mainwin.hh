@@ -28,10 +28,19 @@ class MainWin : public QMainWindow {
 
   XRecordGather * gatherer;
 
-  QLabel * textDisplay;
-  QLabel * imgDisplay;
+  /// The whole display
+  QLabel * display;
 
+
+  /// The timer responsible for the update.
   QTimer refreshTimer;
+
+  /// The history pixmap
+  QPixmap rateDisplay;
+
+  /// The last XRecordGather::currentTime() when the display was
+  /// updated, or -1
+  long lastTime;
 public:
   MainWin(XRecordGather *g);
   ~MainWin() {;};

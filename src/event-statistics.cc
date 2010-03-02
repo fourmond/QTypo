@@ -33,6 +33,29 @@ double EventStatistics::averageRate(long currentTime)
   return events.size()/(1e-3 * (currentTime- events.head()));
 }
 
+double EventStatistics::averageRate(long t1, long t2)
+{
+  int nb = 0;
+  int i = 0;
+  if(! events.size()) // No elements yet...
+    return 0;
+  if(t1 > t2)
+    return -1; // Something wrong happened !
+  
+  while(events[i] < t1) {
+    i++;
+    if(i >= events.size())
+      return 0;
+  }
+
+  while(events[i + nb] < t2) {
+    nb++;
+    if(i + nb >= events.size())
+      break;
+  }
+  return nb/(1e-3 * (t2 - t1));
+}
+
 
 QVector<long> EventStatistics::histogram(int nb, long currentTime)
 {
@@ -49,6 +72,7 @@ QVector<long> EventStatistics::histogram(int nb, long currentTime)
   }
   return hist;
 }
+
 
 QPixmap EventStatistics::history(long currentTime)
 {

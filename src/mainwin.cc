@@ -19,18 +19,19 @@
 #include <headers.hh>
 #include <mainwin.hh>
 
-MainWin::MainWin(XRecordGather *g) : gatherer(g)
+#include <stdio.h>
+
+MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
 {
-  QWidget * central = new QWidget(this);
-  QVBoxLayout * layout = new QVBoxLayout(central);
-  imgDisplay = new QLabel();
-  layout->addWidget(imgDisplay);
-  textDisplay = new QLabel();
-  layout->addWidget(textDisplay);
-  setCentralWidget(central);
+  display = new QLabel();
+  setCentralWidget(display);
 
   refreshTimer.setSingleShot(false);
   refreshTimer.start(1000);
+
+  /// @todo customize !
+  rateDisplay = QPixmap(200, 30);
+  rateDisplay.fill(); /// \todo customize background color...
 
   connect(&refreshTimer, SIGNAL(timeout()), SLOT(updateDisplay()));
   updateDisplay();
@@ -38,7 +39,40 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g)
 
 void MainWin::updateDisplay()
 {
-  textDisplay->setText(tr("Avg: %1 k/s Max: 0 k/s").
-		       arg(gatherer->averageRate()));
-  imgDisplay->setPixmap(gatherer->history());
+  long currentTime = gatherer->currentTime();
+  if(currentTime <= lastTime)
+    return;
+  QPixmap area = QPixmap(200,45);
+  QPainter p(&area);
+  p.eraseRect(area.rect());
+
+  /// @todo make it all neat and clean, using the right functions...
+  p.drawText(0,42,tr("Avg: %1 k/s Max: 0 k/s").
+	     arg(gatherer->events()->averageRate(currentTime),0,'f', 1));
+
+
+  if(lastTime >= 0) {
+    QPixmap nd(200,30);
+    nd.fill();
+    {
+      QPainter np(&nd);
+      double avg = gatherer->events()->averageRate(lastTime, currentTime);
+      // shift the old pixmap
+      np.drawPixmap(0,0,rateDisplay, 2,0, -1, -1);
+      
+      // Now, draw some bar:
+      np.fillRect(198, 29, 2, - avg * 2, Qt::SolidPattern);
+      printf("rate: %f\n", avg);
+    }
+    rateDisplay = nd;
+  }
+
+  // Last draw the rateDisplay
+  p.drawPixmap(0,0, rateDisplay);
+
+  // maybe draw lines at 5 and 10 ?
+  
+  
+  display->setPixmap(area);
+  lastTime = currentTime;
 }

@@ -38,7 +38,11 @@
 #include <QTime>
 #include <QDateTime>
 
-#include <QX11Info>
+
+#include <QGraphicsScene>
+#include <QGraphicsView>
+
+// #include <QX11Info>
 
 // X11 stuff
 #include <X11/Xlibint.h>

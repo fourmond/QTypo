@@ -149,6 +149,8 @@ void XRecordGather::doPullData()
 long  XRecordGather::currentTime()
 {
   QDateTime cur = QDateTime::currentDateTime();
+  if(! firstEvent.isValid())
+    return -1;
   return 
     firstEvent.secsTo(cur) * 1000 + 
     ( cur.time().msec() > firstEvent.time().msec() ? 

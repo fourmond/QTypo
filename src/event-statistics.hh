@@ -39,6 +39,9 @@ public:
   /// The number of events currently in the processing queue.
   int nbEvents() { return events.size();};
 
+  /// Returns the rate of events between two times
+  double averageRate(long t1, long t2);
+
   /// Returns the number of events per second over the whole frame.
   double averageRate(long currentTime);
 
@@ -48,6 +51,7 @@ public:
 
   /// Draws a histogram into a QPixmap and returns it.
   QPixmap history(long currentTime);
+
   
 };
 

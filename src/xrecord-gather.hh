@@ -40,16 +40,17 @@ class XRecordGather : public QObject {
   /// The timer handling the gathering of the data.
   QTimer refreshTimer;
 
-  /// The queue handling the actual compilation of the statistics. It
-  /// is fed numbers in milliseconds from the first event received (ie
-  /// the "Starting to record" event)
-  EventStatistics keyPressEvents;
-
   /// The subprocess PID
   int childPID;
 
   /// The precise time when the first event was received
   QDateTime firstEvent;
+
+  /// The queue handling the actual compilation of the statistics. It
+  /// is fed numbers in milliseconds from the first event received (ie
+  /// the "Starting to record" event)
+  EventStatistics keyPressEvents;
+  
 		      
   /// The server time of the first event.
   long firstServerTime;
@@ -71,14 +72,7 @@ public:
   /// The number of milliseconds since the first event
   long currentTime();
 
-  /// \name Accessor functions for statistics
-  /// 
-  /// @{
-  double averageRate() { return keyPressEvents.averageRate(currentTime());};
-
-  QPixmap history() { return keyPressEvents.history(currentTime());};
-
-  /// @}
+  EventStatistics * events() { return &keyPressEvents;};
 
 signals:
   /// This signal is emitted whenever the state of the queue has
