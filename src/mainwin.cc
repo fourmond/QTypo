@@ -27,7 +27,7 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
   setCentralWidget(display);
 
   refreshTimer.setSingleShot(false);
-  refreshTimer.start(1000);
+  refreshTimer.start(4000);
 
   displaySize = QSize(200,40);
   textSize = 15;
@@ -56,12 +56,19 @@ void MainWin::updateDisplay()
   QPainter p(&area);
   p.eraseRect(area.rect());
 
+  QFont font;
+  font.setPointSize(8);
+  p.setFont(font);
+
   /// @todo make it all neat and clean, using the right functions...
   p.drawText(QRect(0,displaySize.height(), totalSize.width(),
 		   totalSize.height() - displaySize.height()),
 	     Qt::AlignCenter, 
-	     tr("Avg: %1 k/s Max: 0 k/s").
-	     arg(gatherer->events()->averageRate(currentTime),0,'f', 1));
+	     tr("A: %1 k/s M: %2 k/s T: %4 k AM: %3 k/s").
+	     arg(gatherer->events()->averageRate(currentTime),0,'f', 1).
+	     arg(gatherer->events()->maxRate(),0,'f', 1).
+	     arg(gatherer->events()->allTimeMaxRate,0,'f', 1).
+	     arg(gatherer->events()->allTimeNumber));
 
 
   if(lastTime >= 0) {
@@ -83,10 +90,27 @@ void MainWin::updateDisplay()
 
   // Last draw the rateDisplay
   p.drawPixmap(leftMargin,0, rateDisplay);
+  QPen pen;  
 
-  // maybe draw lines at 5 and 10 ?
-  
-  
+  pen.setWidth(1);
+  pen.setBrush(Qt::blue);
+  pen.setStyle(Qt::DashLine);
+  // That's not reallt clean, but, well...
+  p.setPen(pen);
+  p.drawLine(leftMargin, displaySize.height(), 
+	     totalSize.width(), displaySize.height());
+  p.drawLine(leftMargin, displaySize.height() - 20, 
+	     totalSize.width(), displaySize.height() - 20);
+  pen.setStyle(Qt::DotLine);
+  p.setPen(pen);
+  p.drawLine(leftMargin, displaySize.height() - 10, 
+	     totalSize.width(), displaySize.height() - 10);
+  p.drawLine(leftMargin, displaySize.height() - 30, 
+	     totalSize.width(), displaySize.height() - 30);
+
+  // Legends ?
+
+
   display->setPixmap(area);
   lastTime = currentTime;
 }

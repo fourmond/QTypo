@@ -25,10 +25,18 @@ class EventStatistics {
 
   /// The maximum time between the first and last events
   long frame;
+
 public:
 
+  /// The total number of events since the first one (included).
+  int allTimeNumber;
+
+  /// The maximum rate in 1 second
+  double allTimeMaxRate;
+
   /// Creates an EventStatistics object.
-  EventStatistics(long f = 100000) : frame(f) {;};
+  EventStatistics(long f = 400000) : frame(f), allTimeNumber(0), 
+				     allTimeMaxRate(0) {;};
 
   /// Add one event.
   ///
@@ -52,7 +60,11 @@ public:
   /// Draws a histogram into a QPixmap and returns it.
   QPixmap history(long currentTime);
 
-  
+  // /// Returns the total number of events
+  // int numberAllEvents() { return totalNumber;};
+
+  /// The maximum rate during the period covered by the events queue.
+  double maxRate();
 };
 
 #endif

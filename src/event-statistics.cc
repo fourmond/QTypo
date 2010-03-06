@@ -21,9 +21,25 @@
 
 void EventStatistics::addEvent(long time)
 {
+  allTimeNumber++;
   events.enqueue(time);
   while(events.head() + frame < time)
     events.dequeue();
+  double r = averageRate(time - 1000, time);
+  if(r > allTimeMaxRate)
+    allTimeMaxRate = r;
+}
+
+/// The maximum rate since the first event still in the loop.
+double EventStatistics::maxRate()
+{
+  double rate = 0;
+  for(int t = events.head() + 1000; t < events.last(); t += 1000) {
+    double r = averageRate(t - 1000, t);
+    if(r > rate)
+      rate = r;
+  }
+  return rate;
 }
 
 double EventStatistics::averageRate(long currentTime)
