@@ -72,6 +72,21 @@ double EventStatistics::averageRate(long t1, long t2)
   return nb/(1e-3 * (t2 - t1));
 }
 
+double EventStatistics::movingAverage(long t1, long t2, long dt)
+{
+  double r,m;
+  long a;
+  m = 0;
+  for(a = t1; a + dt <= t2; a += dt/2+1) {
+    if(a + dt > t2)
+      a = t2 - dt;
+    r = averageRate(a, a+dt);
+    if(r > m)
+      m = r;
+  }
+  return m;
+}
+
 
 QVector<long> EventStatistics::histogram(int nb, long currentTime)
 {

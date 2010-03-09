@@ -38,7 +38,7 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
   
   /// @todo customize !
   rateDisplay = QPixmap(displaySize);
-  rateDisplay.fill(); /// \todo customize background color...
+  rateDisplay.fill(Qt::transparent); /// \todo customize background color...
 
   connect(&refreshTimer, SIGNAL(timeout()), SLOT(updateDisplay()));
   updateDisplay();
@@ -64,32 +64,14 @@ void MainWin::updateDisplay()
   p.drawText(QRect(0,displaySize.height(), totalSize.width(),
 		   totalSize.height() - displaySize.height()),
 	     Qt::AlignCenter, 
-	     tr("A: %1 k/s M: %2 k/s T: %4 k AM: %3 k/s").
-	     arg(gatherer->events()->averageRate(currentTime),0,'f', 1).
-	     arg(gatherer->events()->maxRate(),0,'f', 1).
+	     tr("Rates: %1 %2 %3 Max: %4 k/s T: %5 k").
+	     arg(gatherer->events()->movingAverage(currentTime,1000),0,'f', 1).
+	     arg(gatherer->events()->movingAverage(currentTime,5000),0,'f', 1).
+	     arg(gatherer->events()->movingAverage(currentTime,30000),0,'f', 1).
 	     arg(gatherer->events()->allTimeMaxRate,0,'f', 1).
 	     arg(gatherer->events()->allTimeNumber));
 
-
-  if(lastTime >= 0) {
-    QPixmap nd(displaySize);
-    nd.fill();
-    {
-      QPainter np(&nd);
-      double avg = gatherer->events()->averageRate(lastTime, currentTime);
-      // shift the old pixmap
-      np.drawPixmap(0,0,rateDisplay, 2,0, -1, -1);
-      
-      // Now, draw some bar:
-      np.fillRect(displaySize.width() - 2, 
-		  displaySize.height() - 1, 2, - avg * 2, 
-		  Qt::SolidPattern);
-    }
-    rateDisplay = nd;
-  }
-
-  // Last draw the rateDisplay
-  p.drawPixmap(leftMargin,0, rateDisplay);
+  // Set the background
   QPen pen;  
 
   pen.setWidth(1);
@@ -108,6 +90,35 @@ void MainWin::updateDisplay()
   p.drawLine(leftMargin, displaySize.height() - 30, 
 	     totalSize.width(), displaySize.height() - 30);
 
+
+
+  if(lastTime >= 0) {
+    QPixmap nd(displaySize);
+    nd.fill(Qt::transparent);
+    {
+      QPainter np(&nd);
+      double avg = gatherer->events()->averageRate(lastTime, currentTime);
+      // shift the old pixmap
+      np.drawPixmap(0,0,rateDisplay, 2,0, -1, -1);
+
+      QColor color("darkgreen");
+      np.setOpacity(0.5);
+      np.setPen(color);
+      np.setBrush(QBrush(color));
+      // Now, draw some bar:
+      int left,bot;
+      left = displaySize.width() - 2;
+      bot = displaySize.height() - 1;
+      np.fillRect(left, bot, 2, - avg * 2, 
+		  color);
+      np.setOpacity(1);
+      np.fillRect(left, bot - avg * 2, 2,2, color);
+    }
+    rateDisplay = nd;
+  }
+
+  // Last draw the rateDisplay
+  p.drawPixmap(leftMargin,0, rateDisplay);
   // Legends ?
 
 

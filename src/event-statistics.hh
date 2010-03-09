@@ -50,6 +50,14 @@ public:
   /// Returns the rate of events between two times
   double averageRate(long t1, long t2);
 
+  /// Returns the maximum of the average over dt between t1 and t2.
+  double movingAverage(long t1, long t2, long dt);
+
+  /// Returns the moving average over the last dt*10 time.
+  double movingAverage(long current, long dt) {
+    return movingAverage(current - 10*dt, current, dt);
+  };
+
   /// Returns the number of events per second over the whole frame.
   double averageRate(long currentTime);
 
