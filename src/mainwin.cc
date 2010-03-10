@@ -45,6 +45,8 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
 
   resize(totalSize);
   setWindowFlags(Qt::FramelessWindowHint);
+
+  font.setPixelSize(9);
 }
 
 void MainWin::updateDisplay()
@@ -56,8 +58,6 @@ void MainWin::updateDisplay()
   QPainter p(&area);
   p.eraseRect(area.rect());
 
-  QFont font;
-  font.setPointSize(8);
   p.setFont(font);
 
   /// @todo make it all neat and clean, using the right functions...

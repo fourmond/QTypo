@@ -56,6 +56,10 @@ class MainWin : public QMainWindow {
   /// The last XRecordGather::currentTime() when the display was
   /// updated, or -1
   long lastTime;
+
+  /// The font used for display
+  QFont font;
+
 public:
   MainWin(XRecordGather *g);
   ~MainWin() {;};
