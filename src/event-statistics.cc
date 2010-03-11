@@ -74,17 +74,24 @@ double EventStatistics::averageRate(long t1, long t2)
 
 double EventStatistics::movingAverage(long t1, long t2, long dt)
 {
-  double r,m;
-  long a;
-  m = 0;
-  for(a = t1; a + dt <= t2; a += dt/2+1) {
-    if(a + dt > t2)
-      a = t2 - dt;
-    r = averageRate(a, a+dt);
-    if(r > m)
-      m = r;
+  int max = 0;
+  int first, last;
+  if(dt <= 0)
+    return -1;
+  last = events.size() - 1;
+  while(last >= 0 && events[last] > t2)
+    last--;
+  if(last < 0)
+    return -1;
+  first = last;
+  while(first >= 0 && events[first] > t1) {
+    while(events[last] - events[first] > dt)
+      last--;
+    if(max < last - first)
+      max = last - first;
+    first--;
   }
-  return m;
+  return max/(dt * 1e-3);
 }
 
 
