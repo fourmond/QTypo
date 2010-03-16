@@ -35,17 +35,17 @@ class MainWin : public QMainWindow {
   /// The timer responsible for the update.
   QTimer refreshTimer;
 
-  /// The history pixmap
-  QPixmap rateDisplay;
+  /// The width of the display, in pixels
+  int displayWidth();
 
   /// The size in terms of the display
-  QSize displaySize;
+  QSize displaySize();
 
   /// The size of the text band down.
   int textSize;
 
   /// The total size of the inner widget.
-  QSize totalSize;
+  QSize totalSize();
 
   /// The left margin (X axis ?)
   int leftMargin;
@@ -59,6 +59,23 @@ class MainWin : public QMainWindow {
 
   /// The font used for display
   QFont font;
+
+  /// The height of the display.
+  int displayHeight;
+
+  int totalTime();
+
+  /// The structure of the display. Arrays of pairs:
+  /// \li the first element is the time in second for the average
+  /// \li the second is the number of averages
+  ///
+  /// from right to left, ie from most recent to most ancient.
+  QList< QPair<int,int> > displayScales;
+
+  /// Returns the position of the pixels to be drawn onto the
+  /// display. Need to multiply absissa by 2 to actually get the pixels.
+  QVector<double> ratesData(long time);
+  
 
 public:
   MainWin(XRecordGather *g);

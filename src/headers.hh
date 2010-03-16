@@ -38,6 +38,7 @@
 #include <QTime>
 #include <QDateTime>
 
+#include <QPair>
 
 #include <QGraphicsScene>
 #include <QGraphicsView>

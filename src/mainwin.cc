@@ -21,32 +21,77 @@
 
 #include <stdio.h>
 
+int MainWin::displayWidth()
+{
+  int i = 0;
+  for(int j = 0; j < displayScales.size(); j++)
+    i += displayScales[j].second;
+  return i*2;
+}
+
+QSize MainWin::displaySize()
+{
+  return QSize(displayWidth(), displayHeight);
+}
+
+
+QSize MainWin::totalSize()
+{
+  return QSize(displayWidth() + leftMargin + rightMargin, 
+	       displayHeight + textSize);
+}
+
+int MainWin::totalTime()
+{
+  int i = 0;
+  for(int j = 0; j < displayScales.size(); j++)
+    i += displayScales[j].first * displayScales[j].second;
+  return i;
+}
+
 MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
 {
   display = new QLabel();
   setCentralWidget(display);
 
   refreshTimer.setSingleShot(false);
-  refreshTimer.start(4000);
+  refreshTimer.start(1000);
 
-  displaySize = QSize(200,40);
   textSize = 15;
   leftMargin = 15;
   rightMargin = 5;
-  totalSize = QSize(displaySize.width() + leftMargin + rightMargin, 
-		    displaySize.height() + textSize);
-  
-  /// @todo customize !
-  rateDisplay = QPixmap(displaySize);
-  rateDisplay.fill(Qt::transparent); /// \todo customize background color...
 
+  displayHeight = 30;
+
+  displayScales << QPair<int,int>(1,20)
+		<< QPair<int,int>(5,30)
+		<< QPair<int,int>(30,50);
+
+  // set the frame correctly.
+  g->events()->frame = totalTime() * 1000;
+
+  
   connect(&refreshTimer, SIGNAL(timeout()), SLOT(updateDisplay()));
   updateDisplay();
 
-  resize(totalSize);
+  resize(totalSize());
   setWindowFlags(Qt::FramelessWindowHint);
 
   font.setPixelSize(9);
+}
+
+QVector<double> MainWin::ratesData(long time)
+{
+  QVector<double> values;
+  long t = time;
+  for(int i = 0; i < displayScales.size(); i++) {
+    int dt = displayScales[i].first;
+    int nb = displayScales[i].second;
+    t = t - dt * 1000 * nb;
+    values = gatherer->events()->
+      histogram(t, t + dt * 1000 * nb, dt * 1000) + values;
+  }
+  return values;
 }
 
 void MainWin::updateDisplay()
@@ -54,15 +99,15 @@ void MainWin::updateDisplay()
   long currentTime = gatherer->currentTime();
   if(currentTime <= lastTime)
     return;
-  QPixmap area = QPixmap(totalSize);
+  QPixmap area = QPixmap(totalSize());
   QPainter p(&area);
   p.eraseRect(area.rect());
 
   p.setFont(font);
 
   /// @todo make it all neat and clean, using the right functions...
-  p.drawText(QRect(0,displaySize.height(), totalSize.width(),
-		   totalSize.height() - displaySize.height()),
+  p.drawText(QRect(0,displayHeight, totalSize().width(),
+		   totalSize().height() - displayHeight),
 	     Qt::AlignCenter, 
 	     tr("Rates: %1 %2 %3 Max: %4 k/s T: %5 k").
 	     arg(gatherer->events()->movingAverage(currentTime,1000),0,'f', 1).
@@ -74,52 +119,66 @@ void MainWin::updateDisplay()
   // Set the background
   QPen pen;  
 
-  pen.setWidth(1);
-  pen.setBrush(Qt::blue);
-  pen.setStyle(Qt::DashLine);
-  // That's not reallt clean, but, well...
-  p.setPen(pen);
-  p.drawLine(leftMargin, displaySize.height(), 
-	     totalSize.width(), displaySize.height());
-  p.drawLine(leftMargin, displaySize.height() - 20, 
-	     totalSize.width(), displaySize.height() - 20);
-  pen.setStyle(Qt::DotLine);
-  p.setPen(pen);
-  p.drawLine(leftMargin, displaySize.height() - 10, 
-	     totalSize.width(), displaySize.height() - 10);
-  p.drawLine(leftMargin, displaySize.height() - 30, 
-	     totalSize.width(), displaySize.height() - 30);
-
 
 
   if(lastTime >= 0) {
-    QPixmap nd(displaySize);
+    /// \todo using a subpixmap isn't that great. I probably should
+    /// try using a way to select the viewport. Later.
+    QPixmap nd(displaySize());
     nd.fill(Qt::transparent);
-    {
-      QPainter np(&nd);
-      double avg = gatherer->events()->averageRate(lastTime, currentTime);
-      // shift the old pixmap
-      np.drawPixmap(0,0,rateDisplay, 2,0, -1, -1);
+    QPainter np(&nd);
+    QColor color("darkgreen");
 
-      QColor color("darkgreen");
-      np.setOpacity(0.5);
-      np.setPen(color);
-      np.setBrush(QBrush(color));
-      // Now, draw some bar:
-      int left,bot;
-      left = displaySize.width() - 2;
-      bot = displaySize.height() - 1;
-      np.fillRect(left, bot, 2, - avg * 2, 
-		  color);
-      np.setOpacity(1);
-      np.fillRect(left, bot - avg * 2, 2,2, color);
+
+    // Drawing horizontal background lines.
+    pen.setWidth(1);
+    pen.setBrush(Qt::blue);
+
+    for(int i = 0; i < displayHeight; i += 10) {
+      if(i/10 % 2)
+	pen.setStyle(Qt::DotLine);
+      else
+	pen.setStyle(Qt::DashLine);
+      np.setPen(pen);
+      
+      np.drawLine(0, displayHeight - i, 
+		  displaySize().width(), displayHeight - i);
     }
-    rateDisplay = nd;
+
+    // Drawing vertical lines corresponding to the scale transitions
+    pen.setStyle(Qt::DashLine);
+    np.setPen(pen);
+    int j = 0;
+    for(int i = displayScales.size() - 1; i >= 0 ; i--) {
+      j += displayScales[i].second * 2;
+      np.drawLine(j, 0, j, displayHeight);
+    }
+
+    // Now drawing the actual data
+    QVector<double> values = ratesData(currentTime);
+    QPainterPath path;
+    path.moveTo(0,displayHeight - values[0] * 2);
+    for(int i = 1; i < values.size(); i++) {
+      path.lineTo(i * 2, displayHeight - values[i] * 2);
+    }
+    np.strokePath(path, QPen(color));
+    np.setOpacity(0.5);
+    // We now close the path.
+    path.lineTo((values.size() - 1) * 2, displayHeight);
+    path.lineTo(0,displayHeight);
+    np.fillPath(path, QBrush(color));
+
+
+    p.drawPixmap(leftMargin,0, nd);    
   }
 
-  // Last draw the rateDisplay
-  p.drawPixmap(leftMargin,0, rateDisplay);
-  // Legends ?
+  // Draw a border ?
+  pen.setWidth(1);
+  pen.setBrush(Qt::black);
+  pen.setStyle(Qt::SolidLine);
+  p.setPen(pen);
+  
+  p.drawRect(QRect(QPoint(leftMargin, 0), displaySize()));
 
 
   display->setPixmap(area);

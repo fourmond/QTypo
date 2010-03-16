@@ -23,10 +23,10 @@
 class EventStatistics {
   QQueue<long> events;
 
+public:
+
   /// The maximum time between the first and last events
   long frame;
-
-public:
 
   /// The total number of events since the first one (included).
   int allTimeNumber;
@@ -61,12 +61,9 @@ public:
   /// Returns the number of events per second over the whole frame.
   double averageRate(long currentTime);
 
-  /// Divides the frame into nb segments and count the key strokes
-  /// inside them. 
-  QVector<long> histogram(int nb, long currentTime);
-
-  /// Draws a histogram into a QPixmap and returns it.
-  QPixmap history(long currentTime);
+  /// Returns an array with the average of each segment of size dt
+  /// between t1 and t2.
+  QVector<double> histogram(long t1, long t2, long dt);
 
   // /// Returns the total number of events
   // int numberAllEvents() { return totalNumber;};

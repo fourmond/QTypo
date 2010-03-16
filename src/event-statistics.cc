@@ -95,35 +95,16 @@ double EventStatistics::movingAverage(long t1, long t2, long dt)
 }
 
 
-QVector<long> EventStatistics::histogram(int nb, long currentTime)
+QVector<double> EventStatistics::histogram(long t1, long t2, long dt)
 {
-  /// \todo this function most probably should provide more decent
-  /// control in terms of binning and the like.
-  QVector<long> hist(nb, 0);
-  if(events.size() < 1)
-    return hist;
-  long init = currentTime - frame +1;
-  for(int i = 0; i < events.size(); i++) {
-    int j = (events[i] - init)*nb/frame;
-    if(j>=0 && j < nb) 
-      hist[j] += 1;
+  int nb = (t2 - t1)/dt + 1;
+  long a;
+  QVector<double> hist(nb, 0);
+  for(int i = 0; i < nb; i++) {
+    a = t1 + i * dt;
+    if(a + dt > t2)
+      a = t2-dt;
+    hist[i] = averageRate(a, a+dt);
   }
   return hist;
-}
-
-
-QPixmap EventStatistics::history(long currentTime)
-{
-  QVector<long> hist = histogram(frame/1000,currentTime);
-  QPixmap pix(frame/1000*2, 30); // 2 points for one keystroke per second
-  QPainter d(&pix);
-  QColor c("red");
-  QPainterPath p(QPointF(0, 30 - 2*hist[0]));
-  d.setPen(c);
-  d.eraseRect(pix.rect());
-  for(int i = 1; i < hist.size(); i++)
-    p.lineTo(i*2, 30 - hist[i]*2);
-  d.drawPath(p);
-
-  return pix;
 }
