@@ -75,7 +75,7 @@ MainWin::MainWin(XRecordGather *g) : gatherer(g), lastTime(-1)
   updateDisplay();
 
   resize(totalSize());
-  setWindowFlags(Qt::FramelessWindowHint);
+  setWindowFlags(Qt::Tool|Qt::FramelessWindowHint);
 
   font.setPixelSize(9);
 }
