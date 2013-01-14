@@ -54,6 +54,11 @@ class XRecordGather : public QObject {
 		      
   /// The server time of the first event.
   long firstServerTime;
+
+  /// The offset for the response of the server. Offsets occur when
+  /// going to sleep, since apparently the X server's internal time is
+  /// continuous event through a sleep, while the time obviously isn't.
+  long serverOffset;
 protected slots:
   /// internally called by the timer to pull the data
   void doPullData();

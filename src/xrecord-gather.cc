@@ -120,8 +120,17 @@ void XRecordGather::pullFromGatheringThread()
   int i = 0;
   while(pendingData()) {
     read(gatheringFd, &d, sizeof(d));
-    if(firstEvent.isValid())
-      keyPressEvents.addEvent(d.time - firstServerTime);
+    if(firstEvent.isValid()) {
+      // We look for discontinuities
+      long ct = currentTime();
+      long otime = d.time - firstServerTime + serverOffset;
+      if(ct - otime > 10000) { // 10 seconds lag is a clear sign of a sleep 
+        serverOffset = ct - d.time + firstServerTime;
+        fprintf(stderr, "Detected desynchronization, adjusting offset to %ld\n",
+                serverOffset);
+      }
+      keyPressEvents.addEvent(d.time - firstServerTime + serverOffset);
+    }
     else {
       firstEvent = QDateTime::currentDateTime();
       firstServerTime = d.time;
@@ -137,7 +146,7 @@ XRecordGather::XRecordGather(int refreshRate)
   refreshTimer.setSingleShot(false);
   refreshTimer.start(refreshRate);
   connect(&refreshTimer, SIGNAL(timeout()), SLOT(doPullData()));
-  
+  serverOffset = 0;
 }
 
 void XRecordGather::doPullData()
